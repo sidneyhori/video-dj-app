@@ -18,12 +18,8 @@ export const initStrudel = async () => {
       prebake: () => import('@strudel/mini'),
     });
 
-    // Set a default silent pattern first to avoid "no pattern set" error
-    await strudelRepl.evaluate('silence');
-    await strudelRepl.start();
     isInitialized = true;
-
-    console.log('Strudel initialized successfully');
+    console.log('Strudel REPL created successfully');
     return strudelRepl;
   } catch (error) {
     console.error('Failed to initialize Strudel:', error);
@@ -37,7 +33,14 @@ export const playPattern = async (pattern: string) => {
   }
 
   try {
+    // Set the pattern first
     await strudelRepl.evaluate(pattern);
+
+    // Start the scheduler if not already started
+    if (!controls.started) {
+      await strudelRepl.start();
+    }
+
     console.log('Playing pattern:', pattern);
   } catch (error) {
     console.error('Failed to play pattern:', error);
