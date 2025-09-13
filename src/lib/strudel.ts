@@ -13,19 +13,13 @@ export const initStrudel = async () => {
   }
 
   try {
-    // Import mini modules first
-    const mini = await import('@strudel/mini');
-
     strudelRepl = repl({
       defaultOutput: 'webaudio',
-      prebake: () => mini,
+      prebake: () => import('@strudel/mini'),
     });
 
-    // Initialize the REPL properly
-    await strudelRepl.init();
-
     isInitialized = true;
-    console.log('Strudel REPL initialized successfully');
+    console.log('Strudel REPL created successfully');
     return strudelRepl;
   } catch (error) {
     console.error('Failed to initialize Strudel:', error);
@@ -39,17 +33,17 @@ export const playPattern = async (pattern: string) => {
   }
 
   try {
-    // Set the pattern first
-    await strudelRepl.evaluate(pattern);
+    // Try to evaluate and play the pattern directly
+    const result = await strudelRepl.evaluate(pattern);
 
-    // Start the scheduler if not already started
-    if (!controls.started) {
-      await strudelRepl.start();
-    }
+    // The evaluation should automatically start playback
+    console.log('Pattern evaluated successfully:', pattern);
+    console.log('Result:', result);
 
-    console.log('Playing pattern:', pattern);
+    return result;
   } catch (error) {
     console.error('Failed to play pattern:', error);
+    console.error('Pattern was:', pattern);
     throw error;
   }
 };
