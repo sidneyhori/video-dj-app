@@ -9,27 +9,27 @@ export interface MusicRequest {
 
 export const genrePatterns = {
   techno: {
-    base: 'sound("bd hh sd hh")',
+    base: '"bd hh sd hh"',
     tempo: 128,
     effects: ['lpf', 'delay', 'distort']
   },
   house: {
-    base: 'sound("bd ~ bd ~").add(sound("hh*8"))',
+    base: '"bd ~ bd ~"',
     tempo: 124,
     effects: ['lpf', 'reverb']
   },
   ambient: {
-    base: 'sound("pad").slow(4)',
+    base: '"pad*2"',
     tempo: 80,
     effects: ['reverb', 'delay', 'lpf']
   },
   drum_and_bass: {
-    base: 'sound("bd ~ ~ ~").add(sound("hh*16"))',
+    base: '"bd ~ ~ ~"',
     tempo: 174,
     effects: ['lpf', 'hpf', 'distort']
   },
   trap: {
-    base: 'sound("bd ~ bd ~").add(sound("hh*4"))',
+    base: '"bd ~ bd ~"',
     tempo: 140,
     effects: ['reverb', 'delay']
   }

@@ -33,10 +33,16 @@ export const playPattern = async (pattern: string) => {
   }
 
   try {
-    // Try to evaluate and play the pattern directly
+    // First try to initialize the mini modules in the REPL context
+    try {
+      await strudelRepl.evaluate('');  // This should trigger prebake loading
+    } catch (e) {
+      // Ignore empty eval error, just trying to load modules
+    }
+
+    // Try to evaluate and play the pattern
     const result = await strudelRepl.evaluate(pattern);
 
-    // The evaluation should automatically start playback
     console.log('Pattern evaluated successfully:', pattern);
     console.log('Result:', result);
 
@@ -44,6 +50,16 @@ export const playPattern = async (pattern: string) => {
   } catch (error) {
     console.error('Failed to play pattern:', error);
     console.error('Pattern was:', pattern);
+
+    // Try a simpler test pattern to debug
+    try {
+      console.log('Trying simple pattern...');
+      const testResult = await strudelRepl.evaluate('"test"');
+      console.log('Simple pattern worked:', testResult);
+    } catch (testError) {
+      console.error('Even simple pattern failed:', testError);
+    }
+
     throw error;
   }
 };
