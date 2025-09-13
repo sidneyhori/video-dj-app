@@ -1,24 +1,82 @@
 'use client';
 
-import { useState } from 'react';
-import { Play, Square, Volume2 } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Play, Square, Volume2, Loader2 } from 'lucide-react';
+import { initStrudel, playPattern, stopPattern, isPlaying as checkIsPlaying } from '@/lib/strudel';
+import { parseNaturalLanguage, generatePattern, modifyPattern } from '@/lib/patterns';
+import AudioVisualizer from '@/components/AudioVisualizer';
 
 export default function Home() {
   const [input, setInput] = useState('');
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentPattern, setCurrentPattern] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [isInitializing, setIsInitializing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setIsPlaying(checkIsPlaying());
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   const handleGenerate = async () => {
-    if (!input.trim()) return;
+    if (!input.trim() || isLoading) return;
 
-    // TODO: Implement NLP processing and Strudel pattern generation
-    setCurrentPattern(`// Generated from: "${input}"\nsound("bd hh sd hh").cpm(120)`);
-    setIsPlaying(true);
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      if (!isInitializing) {
+        setIsInitializing(true);
+        await initStrudel();
+        setIsInitializing(false);
+      }
+
+      let pattern: string;
+
+      // Check if this is a modification request and we have a current pattern
+      const isModification = currentPattern && (
+        input.toLowerCase().includes('make it') ||
+        input.toLowerCase().includes('add') ||
+        input.toLowerCase().includes('more') ||
+        input.toLowerCase().includes('less') ||
+        input.toLowerCase().includes('faster') ||
+        input.toLowerCase().includes('slower')
+      );
+
+      if (isModification) {
+        // Modify existing pattern
+        pattern = modifyPattern(currentPattern, input);
+        setCurrentPattern(`// Modified: "${input}"\n// Previous: ${currentPattern.split('\n')[0].replace('// Generated from: ', '').replace('// Modified: ', '')}\n\n${pattern}`);
+      } else {
+        // Generate new pattern
+        const request = parseNaturalLanguage(input);
+        pattern = generatePattern(request);
+        setCurrentPattern(`// Generated from: "${input}"\n// Genre: ${request.genre || 'techno'}, Mood: ${request.mood || 'neutral'}, Tempo: ${request.tempo || 'medium'}\n\n${pattern}`);
+      }
+
+      await playPattern(pattern);
+      setIsPlaying(true);
+    } catch (error) {
+      console.error('Error generating music:', error);
+      setError(error instanceof Error ? error.message : 'Failed to generate music');
+      setIsInitializing(false);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleStop = () => {
+    stopPattern();
     setIsPlaying(false);
-    // TODO: Stop Strudel playback
+    setError(null);
+  };
+
+  const handleQuickMod = (modification: string) => {
+    setInput(modification);
   };
 
   return (
@@ -50,13 +108,22 @@ export default function Home() {
               />
               <button
                 onClick={handleGenerate}
-                disabled={!input.trim()}
-                className="px-8 py-4 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl font-semibold hover:from-purple-600 hover:to-pink-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                disabled={!input.trim() || isLoading}
+                className="px-8 py-4 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl font-semibold hover:from-purple-600 hover:to-pink-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2"
               >
-                Generate
+                {isLoading && <Loader2 className="w-4 h-4 animate-spin" />}
+                {isInitializing ? 'Initializing...' : isLoading ? 'Generating...' : 'Generate'}
               </button>
             </div>
           </div>
+
+          {/* Error Display */}
+          {error && (
+            <div className="bg-red-500/20 backdrop-blur-lg rounded-2xl p-6 mb-8 border border-red-500/30">
+              <h3 className="text-lg font-semibold text-red-400 mb-2">Error</h3>
+              <p className="text-red-300">{error}</p>
+            </div>
+          )}
 
           {/* Control Panel */}
           {currentPattern && (
@@ -108,7 +175,7 @@ export default function Home() {
                     <button
                       key={mod}
                       className="px-4 py-2 bg-white/20 rounded-lg hover:bg-white/30 transition-colors text-sm"
-                      onClick={() => setInput(mod)}
+                      onClick={() => handleQuickMod(mod)}
                     >
                       {mod}
                     </button>
@@ -118,13 +185,11 @@ export default function Home() {
             </div>
           )}
 
-          {/* Visual Display Placeholder */}
+          {/* Visual Display */}
           <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 border border-white/20">
             <h2 className="text-2xl font-semibold mb-4">Visuals</h2>
-            <div className="aspect-video bg-gradient-to-r from-purple-800/50 to-pink-800/50 rounded-xl flex items-center justify-center">
-              <p className="text-gray-300">
-                {isPlaying ? '🎵 Audio visualizer coming soon...' : 'Start playing music to see visuals'}
-              </p>
+            <div className="aspect-video bg-gradient-to-r from-purple-800/50 to-pink-800/50 rounded-xl overflow-hidden">
+              <AudioVisualizer isPlaying={isPlaying} className="w-full h-full" />
             </div>
           </div>
         </div>
