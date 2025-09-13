@@ -7,12 +7,19 @@ let isInitialized = false;
 export const initStrudel = async () => {
   if (isInitialized) return strudelRepl;
 
+  // Only initialize in browser environment
+  if (typeof window === 'undefined') {
+    throw new Error('Strudel can only be initialized in browser environment');
+  }
+
   try {
     strudelRepl = repl({
       defaultOutput: 'webaudio',
       prebake: () => import('@strudel/mini'),
     });
 
+    // Set a default silent pattern first to avoid "no pattern set" error
+    await strudelRepl.evaluate('silence');
     await strudelRepl.start();
     isInitialized = true;
 

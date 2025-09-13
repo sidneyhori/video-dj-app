@@ -19,27 +19,29 @@ export default function AudioVisualizer({ isPlaying, className = '' }: AudioVisu
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
+    let currentBars = new Array(32).fill(0);
+
     const animate = () => {
       if (!isPlaying) {
         // Gradually fade out bars when not playing
-        setBars(prev => prev.map(bar => Math.max(0, bar - 2)));
+        currentBars = currentBars.map(bar => Math.max(0, bar - 2));
       } else {
         // Generate random bars that simulate audio frequencies
-        setBars(prev => prev.map((_, index) => {
+        currentBars = currentBars.map((_, index) => {
           // Create some pattern based on time for more realistic movement
           const time = Date.now() / 1000;
           const frequency = (index + 1) * 0.5;
           const base = Math.sin(time * frequency) * 30 + 30;
           const random = Math.random() * 20;
           return Math.max(5, base + random);
-        }));
+        });
       }
 
       // Clear canvas
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       // Draw bars
-      const barWidth = canvas.width / bars.length;
+      const barWidth = canvas.width / currentBars.length;
       const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
       gradient.addColorStop(0, '#ff006e');
       gradient.addColorStop(0.5, '#8338ec');
@@ -47,7 +49,7 @@ export default function AudioVisualizer({ isPlaying, className = '' }: AudioVisu
 
       ctx.fillStyle = gradient;
 
-      bars.forEach((bar, index) => {
+      currentBars.forEach((bar, index) => {
         const barHeight = (bar / 100) * canvas.height;
         const x = index * barWidth;
         const y = canvas.height - barHeight;
@@ -66,7 +68,7 @@ export default function AudioVisualizer({ isPlaying, className = '' }: AudioVisu
         cancelAnimationFrame(animationRef.current);
       }
     };
-  }, [isPlaying, bars]);
+  }, [isPlaying]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
