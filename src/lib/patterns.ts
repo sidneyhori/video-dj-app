@@ -84,23 +84,8 @@ export const generatePattern = (request: MusicRequest): string => {
   const basePattern = genrePatterns[genre as keyof typeof genrePatterns] || genrePatterns.techno;
   let pattern = basePattern.base;
 
-  // Apply tempo modification
-  const tempoMultiplier = tempoModifiers[tempo];
-  if (tempoMultiplier !== 1.0) {
-    pattern = `(${pattern}).cpm(${Math.round(basePattern.tempo * tempoMultiplier)})`;
-  } else {
-    pattern = `(${pattern}).cpm(${basePattern.tempo})`;
-  }
-
-  // Apply mood modifiers
-  const moodMod = moodModifiers[mood as keyof typeof moodModifiers];
-  if (moodMod) {
-    const filters = moodMod.filters.join('.');
-    const effects = moodMod.effects.join('.');
-    if (filters) pattern = `(${pattern}).${filters}`;
-    if (effects) pattern = `(${pattern}).${effects}`;
-  }
-
+  // For now, just return the simple mini-notation pattern
+  // We'll add complexity once basic patterns work
   return pattern;
 };
 
