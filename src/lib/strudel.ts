@@ -32,34 +32,44 @@ export const playPattern = async (pattern: string) => {
     await initStrudel();
   }
 
+  console.log('=== DEBUGGING STRUDEL FUNCTIONS ===');
+
+  // Test 1: Try basic JavaScript evaluation
   try {
-    // First try to initialize the mini modules in the REPL context
+    const jsTest = await strudelRepl.evaluate('1 + 1');
+    console.log('✅ Basic JS works:', jsTest);
+  } catch (error) {
+    console.log('❌ Basic JS failed:', error);
+  }
+
+  // Test 2: Check what's in the global context
+  try {
+    const globalsTest = await strudelRepl.evaluate('Object.keys(this)');
+    console.log('✅ Global context keys:', globalsTest);
+  } catch (error) {
+    console.log('❌ Globals check failed:', error);
+  }
+
+  // Test 3: Check if typical Strudel functions exist
+  const testFunctions = ['s', 'sound', 'note', 'stack', 'silence'];
+  for (const func of testFunctions) {
     try {
-      await strudelRepl.evaluate('');  // This should trigger prebake loading
-    } catch (e) {
-      // Ignore empty eval error, just trying to load modules
+      const funcTest = await strudelRepl.evaluate(`typeof ${func}`);
+      console.log(`✅ ${func}:`, funcTest);
+    } catch (error) {
+      console.log(`❌ ${func}: not available`);
     }
+  }
 
-    // Try to evaluate and play the pattern
+  // Test 4: Try the actual pattern
+  try {
     const result = await strudelRepl.evaluate(pattern);
-
     console.log('Pattern evaluated successfully:', pattern);
     console.log('Result:', result);
-
     return result;
   } catch (error) {
     console.error('Failed to play pattern:', error);
     console.error('Pattern was:', pattern);
-
-    // Try a simpler test pattern to debug
-    try {
-      console.log('Trying simple pattern...');
-      const testResult = await strudelRepl.evaluate('"test"');
-      console.log('Simple pattern worked:', testResult);
-    } catch (testError) {
-      console.error('Even simple pattern failed:', testError);
-    }
-
     throw error;
   }
 };
