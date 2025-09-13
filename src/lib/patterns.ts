@@ -9,27 +9,27 @@ export interface MusicRequest {
 
 export const genrePatterns = {
   techno: {
-    base: 'stack(sound("bd").every(4, x => x.distort(0.1)), sound("hh").n("[0,1]*4"), sound("sd").n("~ 0 ~ 0"))',
+    base: 'sound("bd hh sd hh")',
     tempo: 128,
     effects: ['lpf', 'delay', 'distort']
   },
   house: {
-    base: 'stack(sound("bd").n("0 ~ 0 ~"), sound("hh").n("0*8"), sound("sd").n("~ 0 ~ 0"))',
+    base: 'sound("bd ~ bd ~").add(sound("hh*8"))',
     tempo: 124,
     effects: ['lpf', 'reverb']
   },
   ambient: {
-    base: 'stack(sound("pad").slow(4).lpf(400), sound("ambient").slow(8).gain(0.5))',
+    base: 'sound("pad").slow(4)',
     tempo: 80,
     effects: ['reverb', 'delay', 'lpf']
   },
   drum_and_bass: {
-    base: 'stack(sound("bd").n("0 ~ ~ ~"), sound("reese").slow(2).lpf(800), sound("amen").chop(16).fast(2))',
+    base: 'sound("bd ~ ~ ~").add(sound("hh*16"))',
     tempo: 174,
     effects: ['lpf', 'hpf', 'distort']
   },
   trap: {
-    base: 'stack(sound("bd").n("0 ~ 0 ~"), sound("hh").n("0*16").gain(0.3), sound("sd").n("~ ~ 0 ~").delay(0.125))',
+    base: 'sound("bd ~ bd ~").add(sound("hh*4"))',
     tempo: 140,
     effects: ['reverb', 'delay']
   }
@@ -164,15 +164,15 @@ export const modifyPattern = (currentPattern: string, modification: string): str
   } else if (lowerMod.includes('brighter') || lowerMod.includes('make it bright')) {
     modifiedPattern = `${basePattern}.hpf(100).gain(1.1).delay(0.2)`;
   } else if (lowerMod.includes('add percussion') || lowerMod.includes('more percussion')) {
-    modifiedPattern = `stack(${basePattern}, sound("perc").n("0*8").gain(0.4))`;
+    modifiedPattern = `${basePattern}.add(sound("perc"))`;
   } else if (lowerMod.includes('ambient') || lowerMod.includes('make it ambient')) {
-    modifiedPattern = `${basePattern}.slow(2).lpf(400).reverb(0.8).delay(0.5)`;
+    modifiedPattern = `${basePattern}.slow(2).lpf(400).room(0.8)`;
   } else if (lowerMod.includes('distort') || lowerMod.includes('add distortion')) {
     modifiedPattern = `${basePattern}.distort(0.3).gain(0.9)`;
   } else if (lowerMod.includes('reverb') || lowerMod.includes('add reverb')) {
-    modifiedPattern = `${basePattern}.reverb(0.6).room(0.4)`;
+    modifiedPattern = `${basePattern}.room(0.6)`;
   } else if (lowerMod.includes('delay') || lowerMod.includes('add delay')) {
-    modifiedPattern = `${basePattern}.delay(0.3).delayfb(0.6)`;
+    modifiedPattern = `${basePattern}.delay(0.3)`;
   }
 
   return modifiedPattern;

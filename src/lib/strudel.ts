@@ -13,13 +13,19 @@ export const initStrudel = async () => {
   }
 
   try {
+    // Import mini modules first
+    const mini = await import('@strudel/mini');
+
     strudelRepl = repl({
       defaultOutput: 'webaudio',
-      prebake: () => import('@strudel/mini'),
+      prebake: () => mini,
     });
 
+    // Initialize the REPL properly
+    await strudelRepl.init();
+
     isInitialized = true;
-    console.log('Strudel REPL created successfully');
+    console.log('Strudel REPL initialized successfully');
     return strudelRepl;
   } catch (error) {
     console.error('Failed to initialize Strudel:', error);
